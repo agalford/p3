@@ -12,12 +12,21 @@
 
 class Directory : public Cache
 {
-public:
-    Directory(int,int,int,int);
-    
-    void Read(ulong addr, int requestor);
-    void Flush(ulong addr, int updator);
-    void Upgr(ulong addr, int upgrader);
+    Cache** caches;
+    int num_caches;
+
+ public:
+    Directory(Cache**, int, int, int, int);
+
+    //network transactions
+    void Read(ulong addr, int id);
+    void Flush(ulong addr);
+    void Flush(ulong addr, int id);
+    void Upgr(ulong addr, int id);
+    void WB_Int(ulong addr, int id);
+    void ReplyId(ulong addr, int id, int ids);
+    void ReplyD(ulong addr, int id);
+    void InvAck(ulong addr, int id);
 };
 
 #endif

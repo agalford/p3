@@ -18,12 +18,11 @@ typedef unsigned int uint;
 /****add new states, based on the protocol****/
 enum{
     INVALID=0,
-    CLEAN,
-    DIRTY,
     SHARED,
-    SHARED_CLEAN,
-    SHARED_DIRTY,
-    VALID_EXCLUSIVE
+    EXCLUSIVE,
+    MODIFIED,
+    EM,
+    UNOWNED
 };
 
 class Bus;
@@ -65,7 +64,7 @@ class Cache
    
  public:
     ulong currentCycle;  
-     
+    
     Cache(int,int,int,int);
     virtual ~Cache() { delete cache;}
    
@@ -88,30 +87,11 @@ class Cache
     void Read(ulong addr);
     void Flush(ulong addr);
     void Upgr(ulong addr);
-    void WB_Int(ulong addr);
-    void ReplyId(ulong addr);
+    void WB_Int(ulong addr, int ids);
+    void ReplyId(ulong addr, int ids);
     void Reply(ulong addr);
     void ReplyD(ulong addr);
+    void InvAck(ulong addr);
 };
 
-//Firefly Declaration
-class Firefly : public Cache 
-{
-    cacheLine* read_miss(ulong, Bus*);
-    void write_hit(cacheLine*, ulong, Bus*);
-    void write_miss(ulong, Bus*);
-
- public:
-    Firefly(int,int,int,int);
-    void Access(ulong,uchar,Bus*);
-
-    //network transactions
-    void Read(ulong addr);
-    void Flush(ulong addr);
-    void Upgr(ulong addr);
-    void WB_Int(ulong addr);
-    void ReplyId(ulong addr);
-    void Reply(ulong addr);
-    void ReplyD(ulong addr);
-};
 #endif

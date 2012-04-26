@@ -16,6 +16,8 @@
 using namespace std;
 
 #include "cache.h"
+#include "mesi.h"
+#include "directory.h"
 
 int main(int argc, char *argv[])
 {
@@ -48,10 +50,11 @@ int main(int argc, char *argv[])
     //*********************************************//
     //*****create an array of caches here**********//
     //*********************************************//	
-//    Cache **caches = new Cache*[num_processors];
+    Cache **caches = new Cache*[num_processors];
+    Directory* dir = new Directory(caches, num_processors, cache_size, cache_assoc, blk_size);
 
     for (int i = 0; i < num_processors; i++) {
-//        caches[i] = new Cache(cache_size, cache_assoc, blk_size, i); //initialize caches
+        caches[i] = new MesiCache(cache_size, cache_assoc, blk_size, i, dir); //initialize caches
     }
 
     pFile = fopen (fname,"r");

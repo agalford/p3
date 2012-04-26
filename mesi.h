@@ -8,30 +8,25 @@
 #define __MESI_H__
 
 #include "cache.h"
-
-// add enumeration for mesi states
-typedef enum {
-    DRAGON_INVALID,
-    DRAGON_EXCLUSIVE,
-    DRAGON_SHARED,
-    DRAGON_MODIFIED
-} mesiStates_t;
+#include "directory.h"
 
 class MesiCache : public Cache
 {
+    Directory* dir;
+    int invalidations;
+
 public:
-    MesiCache(int,int,int,Directory *);
+    MesiCache(int,int,int,int,Directory *);
     virtual ~MesiCache() {delete cache;}
     
     // overload only those functions that change from the base cache
     void Access(ulong,uchar);
-    cacheLine * findLine(ulong addr);
-    cacheLine *fillLine(ulong addr);
+    cacheLine* fillLine(ulong);
     
-    int handleNetworkInv(ulong addr, Cache *requestor);
-    ulong handleNetworkWBInv(ulong addr, Cache *requestor);
-    ulong handleNetworkWBInt(ulong addr, Cache *requestor);
-    ulong handleNetworkFlush(ulong addr, Cache *requestor);
+    void InvAck(ulong addr);
+    void WB_Inv(ulong addr);
+    void WB_Int(ulong addr);
+    void Flush(ulong addr);
 };
 
 #endif

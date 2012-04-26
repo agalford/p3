@@ -11,7 +11,7 @@
 #include "cache.h"
 using namespace std;
 
-Cache::Cache(int s,int a,int b,int n)
+Cache::Cache(int s, int a, int b, int n)
 {
     id = n;
     ulong i, j;
@@ -25,7 +25,7 @@ Cache::Cache(int s,int a,int b,int n)
     sets       = (ulong)((s/b)/a);
     numLines   = (ulong)(s/b);
     log2Sets   = (ulong)(log2(sets));   
-    log2Blk    = (ulong)(log2(b));   
+    log2Blk    = (ulong)(log2(b));
   
     //*******************//
     //initialize your counters here//
@@ -171,10 +171,9 @@ void Cache::printStats(int id)
 }
 
 //network transactions
-void Cache::Read(ulong addr) {}
 void Cache::Flush(ulong addr) {}
 void Cache::Upgr(ulong addr) {}
-void Cache::WB_Int(ulong addr) {}
-void Cache::ReplyId(ulong addr) {}
-void Cache::Reply(ulong addr) {}
+void Cache::WB_Int(ulong addr, int ids) {}
+void Cache::ReplyId(ulong addr, int ids) {}
 void Cache::ReplyD(ulong addr) {}
+void Cache::InvAck(ulong addr) {}
