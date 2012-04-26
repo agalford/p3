@@ -17,69 +17,101 @@ typedef unsigned int uint;
 
 /****add new states, based on the protocol****/
 enum{
-	INVALID = 0,
-	VALID,
-	DIRTY
+    INVALID=0,
+    CLEAN,
+    DIRTY,
+    SHARED,
+    SHARED_CLEAN,
+    SHARED_DIRTY,
+    VALID_EXCLUSIVE
 };
+
+class Bus;
 
 class cacheLine 
 {
-protected:
-   ulong tag;
-   ulong Flags;   // 0:invalid, 1:valid, 2:dirty 
-   ulong seq; 
+ protected:
+    ulong tag;
+    ulong Flags;
+    ulong seq; 
  
-public:
-   cacheLine()            { tag = 0; Flags = 0; }
-   ulong getTag()         { return tag; }
-   ulong getFlags()			{ return Flags;}
-   ulong getSeq()         { return seq; }
-   void setSeq(ulong Seq)			{ seq = Seq;}
-   void setFlags(ulong flags)			{  Flags = flags;}
-   void setTag(ulong a)   { tag = a; }
-   void invalidate()      { tag = 0; Flags = INVALID; }//useful function
-   bool isValid()         { return ((Flags) != INVALID); }
+ public:
+    cacheLine()            { tag = 0; Flags = 0; }
+    ulong getTag()         { return tag; }
+    ulong getFlags()			{ return Flags;}
+    ulong getSeq()         { return seq; }
+    void setSeq(ulong Seq)			{ seq = Seq;}
+    void setFlags(ulong flags)			{  Flags = flags;}
+    void setTag(ulong a)   { tag = a; }
+    void invalidate()      { tag = 0; Flags = INVALID; }//useful function
+    bool isValid()         { return ((Flags) != INVALID); }
 };
 
 class Cache
 {
-protected:
-   ulong size, lineSize, assoc, sets, log2Sets, log2Blk, tagMask, numLines;
-   ulong reads,readMisses,writes,writeMisses,writeBacks;
+ protected:
+    int id;
+    ulong size, lineSize, assoc, sets, log2Sets, log2Blk, tagMask, numLines;
+    ulong reads,readMisses,writes,writeMisses,writeBacks,transactions,linesReceived;
 
-   //******///
-   //add coherence counters here///
-   //******///
+    //******///
+    //add coherence counters here///
+    //******///
 
-   cacheLine **cache;
-   ulong calcTag(ulong addr)     { return (addr >> (log2Blk) );}
-   ulong calcIndex(ulong addr)  { return ((addr >> log2Blk) & tagMask);}
-   ulong calcAddr4Tag(ulong tag)   { return (tag << (log2Blk));}
+    cacheLine **cache;
+    ulong calcTag(ulong addr)     { return (addr >> (log2Blk) );}
+    ulong calcIndex(ulong addr)  { return ((addr >> log2Blk) & tagMask);}
+    ulong calcAddr4Tag(ulong tag)   { return (tag << (log2Blk));}
    
-public:
+ public:
     ulong currentCycle;  
      
-    Cache(int,int,int);
-   ~Cache() { delete cache;}
+    Cache(int,int,int,int);
+    virtual ~Cache() { delete cache;}
    
-   cacheLine *findLineToReplace(ulong addr);
-   cacheLine *fillLine(ulong addr);
-   cacheLine * findLine(ulong addr);
-   cacheLine * getLRU(ulong);
+    virtual cacheLine *findLineToReplace(ulong addr);
+    cacheLine *fillLine(ulong addr);
+    cacheLine * findLine(ulong addr);
+    cacheLine * getLRU(ulong);
    
-   ulong getRM(){return readMisses;} ulong getWM(){return writeMisses;} 
-   ulong getReads(){return reads;}ulong getWrites(){return writes;}
-   ulong getWB(){return writeBacks;}
+    ulong getRM(){return readMisses;} ulong getWM(){return writeMisses;} 
+    ulong getReads(){return reads;}ulong getWrites(){return writes;}
+    ulong getWB(){return writeBacks;}
    
-   void writeBack(ulong)   {writeBacks++;}
-   void Access(ulong,uchar);
-   void printStats();
-   void updateLRU(cacheLine *);
+    void writeBack(ulong)   {writeBacks++; transactions++;}
+    virtual void Access(ulong,uchar);
+    virtual void Access(ulong,uchar,Bus*);
+    void printStats(int);
+    void updateLRU(cacheLine *);
 
-   //******///
-   //add other functions to handle bus transactions///
-   //******///
-
+    //network transactions
+    void Read(ulong addr);
+    void Flush(ulong addr);
+    void Upgr(ulong addr);
+    void WB_Int(ulong addr);
+    void ReplyId(ulong addr);
+    void Reply(ulong addr);
+    void ReplyD(ulong addr);
 };
 
+//Firefly Declaration
+class Firefly : public Cache 
+{
+    cacheLine* read_miss(ulong, Bus*);
+    void write_hit(cacheLine*, ulong, Bus*);
+    void write_miss(ulong, Bus*);
+
+ public:
+    Firefly(int,int,int,int);
+    void Access(ulong,uchar,Bus*);
+
+    //network transactions
+    void Read(ulong addr);
+    void Flush(ulong addr);
+    void Upgr(ulong addr);
+    void WB_Int(ulong addr);
+    void ReplyId(ulong addr);
+    void Reply(ulong addr);
+    void ReplyD(ulong addr);
+};
 #endif

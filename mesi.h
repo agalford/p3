@@ -11,7 +11,7 @@
 
 // add enumeration for mesi states
 typedef enum {
-	DRAGON_INVALID,
+    DRAGON_INVALID,
     DRAGON_EXCLUSIVE,
     DRAGON_SHARED,
     DRAGON_MODIFIED
@@ -31,7 +31,7 @@ public:
     int handleNetworkInv(ulong addr, Cache *requestor);
     ulong handleNetworkWBInv(ulong addr, Cache *requestor);
     ulong handleNetworkWBInt(ulong addr, Cache *requestor);
-	ulong handleNetworkFlush(ulong addr, Cache *requestor);
+    ulong handleNetworkFlush(ulong addr, Cache *requestor);
 };
 
 #endif
