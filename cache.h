@@ -35,6 +35,7 @@ class cacheLine
     ulong seq; 
  
  public:
+    int fbv;
     cacheLine()            { tag = 0; Flags = 0; }
     ulong getTag()         { return tag; }
     ulong getFlags()			{ return Flags;}
@@ -91,7 +92,7 @@ class Cache
     void ReplyId(ulong addr, int ids);
     void Reply(ulong addr);
     void ReplyD(ulong addr);
-    void InvAck(ulong addr);
+    void Inv(ulong addr);
 };
 
 #endif

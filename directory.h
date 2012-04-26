@@ -15,6 +15,8 @@ class Directory : public Cache
     Cache** caches;
     int num_caches;
 
+    int getId(int fbv);
+
  public:
     Directory(Cache**, int, int, int, int);
 
@@ -23,10 +25,6 @@ class Directory : public Cache
     void Flush(ulong addr);
     void Flush(ulong addr, int id);
     void Upgr(ulong addr, int id);
-    void WB_Int(ulong addr, int id);
-    void ReplyId(ulong addr, int id, int ids);
-    void ReplyD(ulong addr, int id);
-    void InvAck(ulong addr, int id);
 };
 
 #endif
