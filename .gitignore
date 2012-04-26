@@ -1,0 +1,5 @@
+*.o
+out/*
+smp_cache
+*.debug
+*.longTrace
