@@ -85,13 +85,11 @@ class Cache
     void updateLRU(cacheLine *);
 
     //network transactions
-    void Read(ulong addr);
-    void Flush(ulong addr);
-    void Upgr(ulong addr);
-    void WB_Int(ulong addr, int id);
-    void Reply(ulong addr);
-    void ReplyD(ulong addr, bool shared);
-    void Inv(ulong addr);
+    virtual void Flush(ulong addr);
+    virtual void Upgr(ulong addr);
+    virtual void WB_Int(ulong addr, int id);
+    virtual void ReplyD(ulong addr, bool shared);
+    virtual void Inv(ulong addr);
 };
 
 #endif
