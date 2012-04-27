@@ -20,7 +20,6 @@ public:
     
     // overload only those functions that change from the base cache
     void Access(ulong,uchar);
-    cacheLine* fillLine(ulong);
     
     void Inv(ulong addr);
     void WB_Inv(ulong addr);

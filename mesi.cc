@@ -172,31 +172,6 @@ void MesiCache::Access(ulong addr,uchar op)
     }
 }
 
-/*allocate a new line*/
-cacheLine *MesiCache::fillLine(ulong addr)
-{ 
-    ulong tag;
-    
-    cacheLine *victim = findLineToReplace(addr);
-    assert(victim != 0);
-    
-    if(victim->getFlags() == MODIFIED)
-    {
-        writeBack(addr);
-        memWrite();
-    }
-    
-    // FIXME: what else needs to happen here? this is basically what should happen on eviction or what? 
-    tag = calcTag(addr);  
-    victim->setTag(tag);
-    // other code will set the flags.
-    //victim->setFlags(VALID);    
-    /**note that this cache line has been already 
-       upgraded to MRU in the previous function (findLineToReplace)**/
-    
-    return victim;
-}
-
 void MesiCache::Inv(ulong addr)
 {
     // find if a line contains this block
