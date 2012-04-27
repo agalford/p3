@@ -44,9 +44,6 @@ void MesiCache::Access(ulong addr,uchar op)
         }
     }
     else {
-        /**since it's a hit, update LRU and update dirty flag**/
-        updateLRU(line);
-        
         ulong flags = line->getFlags();
         
         switch(flags) {
@@ -73,6 +70,28 @@ void MesiCache::Access(ulong addr,uchar op)
             break;
         }
     }
+}
+
+/*allocate a new line*/
+cacheLine *MesiCache::fillLine(ulong addr)
+{ 
+    ulong tag;
+  
+    cacheLine *victim = findLineToReplace(addr);
+    assert(victim != 0);
+    if(victim->getFlags() == MODIFIED) {
+        writeBack(addr);
+    }
+    
+    dir->Disown(addr,id);
+    	
+    tag = calcTag(addr);   
+    victim->setTag(tag);
+
+    /**note that this cache line has been already 
+       upgraded to MRU in the previous function (findLineToReplace)**/
+
+    return victim;
 }
 
 void MesiCache::Inv(ulong addr)

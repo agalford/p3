@@ -70,7 +70,7 @@ class Cache
     virtual ~Cache() { delete cache;}
    
     virtual cacheLine *findLineToReplace(ulong addr);
-    cacheLine *fillLine(ulong addr);
+    virtual cacheLine *fillLine(ulong addr);
     cacheLine * findLine(ulong addr);
     cacheLine * getLRU(ulong);
    

@@ -32,7 +32,7 @@ int Directory::getId(int fbv) //get first id from bit vector
 void Directory::Read(ulong addr, int id)
 {
     cacheLine * line = findLine(addr);
-    if (line == NULL) {
+    if (line == NULL || line->getFlags() == UNOWNED) {
         //read miss
         line = fillLine(addr);
         line->setFlags(EM);
@@ -46,13 +46,9 @@ void Directory::Read(ulong addr, int id)
             line->fbv |= (1<<id);
         } else if (line->getFlags() == EM) {
             //could be modified, have the owner flush
-            if (id == getId(line->fbv)) {
-                caches[id]->ReplyD(addr, false); // refresh exclusive cache;
-            } else {
-                caches[getId(line->fbv)]->WB_Int(addr, id);
-                line->fbv |= (1<<id);
-                line->setFlags(SHARED);
-            }
+            caches[getId(line->fbv)]->WB_Int(addr, id);
+            line->fbv |= (1<<id);
+            line->setFlags(SHARED);
         }
     }
 }
@@ -84,4 +80,14 @@ void Directory::Upgr(ulong addr, int id)
 void Directory::Flush(ulong addr, int id)
 {
     caches[id]->Flush(addr);
+}
+
+void Directory::Disown(ulong addr, int id)
+{
+    cacheLine* line = findLine(addr);
+    if (line!=NULL) {
+        line->fbv &= ~(1<<id); // remove id from the list of owners
+        if (line->fbv == 0)
+            line->setFlags(UNOWNED);
+    }  
 }

@@ -25,6 +25,7 @@ class Directory : public Cache
     void Flush(ulong addr);
     void Flush(ulong addr, int id);
     void Upgr(ulong addr, int id);
+    void Disown(ulong addr, int id);
 };
 
 #endif
