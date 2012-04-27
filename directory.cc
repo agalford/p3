@@ -36,11 +36,12 @@ void Directory::Read(ulong addr, int id)
         line = fillLine(addr);
         line->setFlags(EM);
         line->fbv = 1<<id; //new line, so just set the FBV
+        caches[id]->ReplyD(addr, false) //not shared
     } else {
         //read hit
         if (line->getFlags() == SHARED) {
             //shared, so directory has the cache data
-            caches[id]->ReplyD(addr);
+            caches[id]->ReplyD(addr, true); //shared
         } else if (line->getFlags() == EM) {
             //could be modified, have the owner do it
             caches[getId(line->fbv)]->WB_Int(addr, id);
