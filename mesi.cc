@@ -13,7 +13,6 @@
 MesiCache::MesiCache(int s,int a,int b,int n, Directory *newDirectory ) : Cache(s,a,b,n)
 {
     dir = newDirectory;
-    invalidations = 0;
 }
 
 /**you might add other parameters to Access()

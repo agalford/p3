@@ -68,16 +68,16 @@ int main(int argc, char *argv[])
     //*****propagate each request down through memory hierarchy**********//
     //*****by calling cachesArray[processor#]->Access(...)***************//
     ///******************************************************************//
-/*
+
     int id;
     char op[16];
     char addr[16];
     while(!feof(pFile)) {
       int c = fscanf(pFile, "%d %s %s", &id, op, addr);
       if (c == 3)
-	caches[id]->Access(strtoul(addr,NULL,16), op[0], bus);
+	caches[id]->Access(strtoul(addr,NULL,16), op[0]);
     }
-*/
+
 	
     fclose(pFile);
 
@@ -85,6 +85,6 @@ int main(int argc, char *argv[])
     //print out all caches' statistics//
     //********************************//
     for (int i=0; i < num_processors; i++) {
-//	caches[i]->printStats(i);
+	caches[i]->printStats(i);
     }
 }

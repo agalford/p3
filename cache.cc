@@ -17,7 +17,7 @@ Cache::Cache(int s, int a, int b, int n)
     ulong i, j;
     reads = readMisses = writes = 0;
     writeMisses = writeBacks = currentCycle = 0;
-    transactions = linesReceived = 0;
+    transactions = linesReceived = invalidations = 0;
    
     size       = (ulong)(s);
     lineSize   = (ulong)(b);
@@ -166,7 +166,7 @@ void Cache::printStats(int id)
     cout << "04. number of write misses:                       " << writeMisses << "\n";
     printf("05. total miss rate:                              %1.6f\n", (float)(readMisses + writeMisses)/(reads + writes));
     cout << "06. number of writebacks:                         " << writeBacks << "\n";
-    cout << "07. number of memory transactions:                " << transactions << "\n";
+    cout << "07. number of invalidations:                      " << invalidations << "\n";
     cout << "08. number of cache to cache transfers:           " << linesReceived << "\n";
 }
 

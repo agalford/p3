@@ -13,7 +13,6 @@
 class MesiCache : public Cache
 {
     Directory* dir;
-    int invalidations;
 
 public:
     MesiCache(int,int,int,int,Directory *);

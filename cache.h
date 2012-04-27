@@ -52,7 +52,7 @@ class Cache
  protected:
     int id;
     ulong size, lineSize, assoc, sets, log2Sets, log2Blk, tagMask, numLines;
-    ulong reads,readMisses,writes,writeMisses,writeBacks,transactions,linesReceived;
+    ulong reads,readMisses,writes,writeMisses,writeBacks,transactions,linesReceived,invalidations;
 
     //******///
     //add coherence counters here///
