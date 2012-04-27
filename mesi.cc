@@ -54,20 +54,20 @@ void MesiCache::Access(ulong addr,uchar op)
         
         switch(flags)
         {
-            case MESI_EXCLUSIVE:
+            case EXCLUSIVE:
                 if(op == 'w')
-					line->setFlags(MESI_MODIFIED);
+					line->setFlags(MODIFIED);
                 else
                     ;
                 
                 break;
                 
-            case MESI_MODIFIED:
+            case MODIFIED:
                 // 1., 2. M-->M on PrRd and PrWr
                 
                 break;
             
-            case MESI_SHARED:
+            case SHARED:
                 if(op == 'w')
                     // post upgr to home
                     ((Directory *)dir)->Upgr(addr, this);
@@ -159,11 +159,11 @@ void MesiCache::ReplyD(ulong addr, bool shared)
     
 	if(shared)
 	{
-		line->setFlags(MESI_SHARED);
+		line->setFlags(SHARED);
 	}
 	else
 	{
-		line->setFlags(MESI_EXCLUSIVE);
+		line->setFlags(EXCLUSIVE);
 	}
 }
 
