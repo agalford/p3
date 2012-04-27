@@ -25,7 +25,7 @@ void MesiCache::Access(ulong addr,uchar op)
     
     if(op == 'w') writes++;
     else          reads++;
-    
+
     cacheLine * line = findLine(addr);
     if(line == NULL) {/*miss*/
         if(op == 'w') writeMisses++;
@@ -33,6 +33,8 @@ void MesiCache::Access(ulong addr,uchar op)
         
         if(op == 'w') {          
             // Send Upgr request to the directory
+            line = fillLine(addr);
+            line->setFlags(MODIFIED);
             dir->Upgr(addr, id);
         }
         else {// read miss
@@ -113,7 +115,7 @@ void MesiCache::WB_Int(ulong addr, int id)
     //printf("handling BusRd\n");
     
     if(line == NULL)
-        return;
+        cout << "attempting to have non-owner flush line";
 
     line->setFlags(SHARED);
 
