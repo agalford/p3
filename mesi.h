@@ -22,7 +22,7 @@ public:
     void Access(ulong,uchar);
     cacheLine* fillLine(ulong);
     
-    void InvAck(ulong addr);
+    void Inv(ulong addr);
     void WB_Inv(ulong addr);
     void WB_Int(ulong addr);
     void Flush(ulong addr);

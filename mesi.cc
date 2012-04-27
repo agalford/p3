@@ -197,7 +197,7 @@ cacheLine *MesiCache::fillLine(ulong addr)
     return victim;
 }
 
-void MesiCache::InvAck(ulong addr)
+void MesiCache::Inv(ulong addr)
 {
     // find if a line contains this block
     cacheLine *line = findLine(addr);

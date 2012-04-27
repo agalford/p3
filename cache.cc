@@ -176,4 +176,4 @@ void Cache::Upgr(ulong addr) {}
 void Cache::WB_Int(ulong addr, int ids) {}
 void Cache::ReplyId(ulong addr, int ids) {}
 void Cache::ReplyD(ulong addr) {}
-void Cache::InvAck(ulong addr) {}
+void Cache::Inv(ulong addr) {}
