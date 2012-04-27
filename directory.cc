@@ -59,16 +59,15 @@ void Directory::Upgr(ulong addr, int id)
 {
     cacheLine * line = findLine(addr);
     if (line == NULL) {
-        //read miss
+        //write miss
         line = fillLine(addr);
         line->setFlags(EM);
         line->fbv = 1<<id; //new line, so just set the FBV
     } else {
-        //read hit
-        caches[id]->ReplyId(addr, line->fbv);
+        //write hit
         for(int i=0; i<num_caches; i++) {
-            if (line->fbv & 1<<i) {
-                caches[i]->Inv(addr);
+            if (line->fbv & 1<<i && i != id) {
+                caches[i]->Inv(addr); //invalidate other caches
             }
         }
     }

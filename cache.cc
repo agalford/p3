@@ -174,6 +174,5 @@ void Cache::printStats(int id)
 void Cache::Flush(ulong addr) {}
 void Cache::Upgr(ulong addr) {}
 void Cache::WB_Int(ulong addr, int ids) {}
-void Cache::ReplyId(ulong addr, int ids) {}
 void Cache::ReplyD(ulong addr, bool shared) {}
 void Cache::Inv(ulong addr) {}
