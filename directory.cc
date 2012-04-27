@@ -5,6 +5,7 @@
 //
 
 #include <stdio.h>
+#include <iostream>
 #include "mesi.h"
 #include "directory.h"
 using namespace std;
@@ -46,6 +47,7 @@ void Directory::Read(ulong addr, int id)
             //could be modified, have the owner flush
             caches[getId(line->fbv)]->WB_Int(addr, id);
             line->fbv |= (1<<id);
+            line->setFlags(SHARED);
         }
     }
 }
@@ -65,11 +67,13 @@ void Directory::Upgr(ulong addr, int id)
         line->fbv = 1<<id; //new line, so just set the FBV
     } else {
         //write hit
+        line->setFlags(EM);
         for(int i=0; i<num_caches; i++) {
             if (line->fbv & 1<<i && i != id) {
                 caches[i]->Inv(addr); //invalidate other caches
             }
         }
+        line->fbv = 1<<id; //line is now owned by a single processor, set the fbv
     }
 }
 

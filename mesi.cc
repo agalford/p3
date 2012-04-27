@@ -6,9 +6,10 @@
 
 #include <assert.h>
 #include <stdio.h>
-
+#include <iostream>
 #include "mesi.h"
 #include "directory.h"
+using namespace std;
 
 MesiCache::MesiCache(int s,int a,int b,int n, Directory *newDirectory ) : Cache(s,a,b,n)
 {
