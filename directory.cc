@@ -46,9 +46,13 @@ void Directory::Read(ulong addr, int id)
             line->fbv |= (1<<id);
         } else if (line->getFlags() == EM) {
             //could be modified, have the owner flush
-            caches[getId(line->fbv)]->WB_Int(addr, id);
-            line->fbv |= (1<<id);
-            line->setFlags(SHARED);
+            if (id == getId(line->fbv)) {
+                caches[id]->ReplyD(addr, false); // refresh exclusive cache;
+            } else {
+                caches[getId(line->fbv)]->WB_Int(addr, id);
+                line->fbv |= (1<<id);
+                line->setFlags(SHARED);
+            }
         }
     }
 }
@@ -65,7 +69,6 @@ void Directory::Upgr(ulong addr, int id)
         //write miss
         line = fillLine(addr);
         line->setFlags(EM);
-        line->fbv = 1<<id; //new line, so just set the FBV
     } else {
         //write hit
         line->setFlags(EM);
@@ -74,8 +77,8 @@ void Directory::Upgr(ulong addr, int id)
                 caches[i]->Inv(addr); //invalidate other caches
             }
         }
-        line->fbv = 1<<id; //line is now owned by a single processor, set the fbv
     }
+    line->fbv = 1<<id; //line is now owned by a single processor, set the fbv
 }
 
 void Directory::Flush(ulong addr, int id)
