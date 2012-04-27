@@ -36,19 +36,18 @@ void Directory::Read(ulong addr, int id)
         line = fillLine(addr);
         line->setFlags(EM);
         line->fbv = 1<<id; //new line, so just set the FBV
-        caches[id]->ReplyD(addr, false) //not shared
+        caches[id]->ReplyD(addr, false); //not shared
     } else {
         //read hit
         if (line->getFlags() == SHARED) {
             //shared, so directory has the cache data
             caches[id]->ReplyD(addr, true); //shared
         } else if (line->getFlags() == EM) {
-            //could be modified, have the owner do it
+            //could be modified, have the owner flush
             caches[getId(line->fbv)]->WB_Int(addr, id);
             line->fbv |= (1<<id);
         }
     }
-    caches[id]->ReplyD(addr);
 }
 
 void Directory::Flush(ulong addr)

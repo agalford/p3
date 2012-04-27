@@ -70,14 +70,14 @@ void Cache::Access(ulong addr,uchar op)
 	else readMisses++;
 
 	cacheLine *newline = fillLine(addr);
-	if(op == 'w') newline->setFlags(DIRTY);    
+	if(op == 'w') newline->setFlags(MODIFIED);    
 		
     }
     else
     {
 	/**since it's a hit, update LRU and update dirty flag**/
 	updateLRU(line);
-	if(op == 'w') line->setFlags(DIRTY);
+	if(op == 'w') line->setFlags(MODIFIED);
     }
 }
 
@@ -146,7 +146,7 @@ cacheLine *Cache::fillLine(ulong addr)
   
     cacheLine *victim = findLineToReplace(addr);
     assert(victim != 0);
-    if(victim->getFlags() == DIRTY || victim->getFlags() == SHARED_DIRTY) writeBack(addr);
+    if(victim->getFlags() == MODIFIED) writeBack(addr);
     	
     tag = calcTag(addr);   
     victim->setTag(tag);
@@ -175,5 +175,5 @@ void Cache::Flush(ulong addr) {}
 void Cache::Upgr(ulong addr) {}
 void Cache::WB_Int(ulong addr, int ids) {}
 void Cache::ReplyId(ulong addr, int ids) {}
-void Cache::ReplyD(ulong addr) {}
+void Cache::ReplyD(ulong addr, bool shared) {}
 void Cache::Inv(ulong addr) {}
