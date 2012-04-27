@@ -25,6 +25,7 @@ public:
     void WB_Inv(ulong addr);
     void WB_Int(ulong addr);
     void Flush(ulong addr);
+	void ReplyD(ulong addr, bool shared);
 };
 
 #endif

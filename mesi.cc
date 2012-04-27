@@ -16,160 +16,94 @@ MesiCache::MesiCache(int s,int a,int b,int n, Directory *newDirectory ) : Cache(
 }
 
 /**you might add other parameters to Access()
-   since this function is an entry point 
-   to the memory hierarchy (i.e. caches)**/
+ since this function is an entry point 
+ to the memory hierarchy (i.e. caches)**/
 void MesiCache::Access(ulong addr,uchar op)
 {
-    currentCycle++;/*per cache global counter to maintain LRU order 
-                     among cache ways, updated on every cache access*/
+	currentCycle++;/*per cache global counter to maintain LRU order 
+                    among cache ways, updated on every cache access*/
     
-    if(op == 'w') writes++;
-    else          reads++;
-	
-    int copies_exist = dir->checkCopiesExist(addr, this);
-    //0-no copies
-    //1-shared copy
-    //2-EM copy
+	if(op == 'w') writes++;
+	else          reads++;
     
-    cacheLine * line = findLine(addr);
-    if(line == NULL)/*miss*/
-    {
-        if(op == 'w') writeMisses++;
-        else readMisses++;
+	cacheLine * line = findLine(addr);
+	if(line == NULL)/*miss*/
+	{
+		if(op == 'w') writeMisses++;
+		else readMisses++;
         
-        cacheLine *newline = fillLine(addr);
-   		
-        //if(op == 'w') newline->setFlags(DIRTY);
+		cacheLine *newline = fillLine(addr);
         
         if(op == 'w')
-        {
-            if(copies_exist == 0 || copies_exist == 1)
-            {
-                // 6. I-->M
-                                
-                //should this be an ReadX request?
-                dir->Upgr(addr, id);
-                
-                // post a memory read
-                memRead();
-				
-                // transition to S
-                newline->setFlags(MODIFIED);
-            }
-            else if(copies_exist == 2)
-            {
-                // 8. I-->M
-                
-                // post a directory read
-                dir->Upgr(addr, id);
-                
-                // post cache to cache read
-                cacheToCacheRead();
-                
-                // transition to M
-                newline->setFlags(MODIFIED);
-            }
+        {          
+			// Send Upgr request to the directory
+            ((Directory *)dir)->Upgr(addr, this);
         }
         else // read miss
         {
-            if(copies_exist == 2)
-            {
-                // 5. I-->S 
-
-                // post a directory read
-                dir->postRead(addr, this);
-				
-                //post a cache to cache read				
-                cacheToCacheRead();
-
-                // transition to S
-                newline->setFlags(SHARED);
-            } 
-            else if(copies_exist == 1)
-            {
-                // 5. I-->S 
-
-                // post a directory read
-                dir ->Read(addr, id);
-
-                // post a memory read
-                memRead();
-                
-                // transition to E
-                newline->setFlags(SHARED);
-            }
-            else//copies_exist == 0
-            {
-                // 7. I-->E
-
-                // post a directory read
-                dir->Read(addr, id);
-
-                    // post a memory read
-                    memRead();
-                
-                // transition to E
-                newline->setFlags(EXCLUSIVE);
-            }
-
+			// Send Upgr request to the directory
+			((Directory)dir)-->Read(addr, this)
         }
-    }
-    else
-    {
-        /**since it's a hit, update LRU and update dirty flag**/
-        updateLRU(line);
+	}
+	else
+	{
+		/**since it's a hit, update LRU and update dirty flag**/
+		updateLRU(line);
         
         ulong flags = line->getFlags();
         
         switch(flags)
         {
-        case EXCLUSIVE:
-            if(op == 'w')
-                // 9. E-->M
-                line->setFlags(MODIFIED);
-            else
-                // 8. E-->E
-                ;
+            case MESI_EXCLUSIVE:
+                if(op == 'w')
+					line->setFlags(MESI_MODIFIED);
+                else
+                    ;
                 
-            break;
+                break;
                 
-        case MODIFIED:
-            // 1., 2. M-->M on PrRd and PrWr
+            case MESI_MODIFIED:
+                // 1., 2. M-->M on PrRd and PrWr
                 
-            break;
+                break;
             
-        case SHARED:
-            if(op == 'w')
-                    
-                if(copies_exist == 1)
-                {
-                    // 3. S-->M
-                        
+            case MESI_SHARED:
+                if(op == 'w')
                     // post upgr to home
-                    dir->postUpgr(addr, 0, this);
-
-                    //RecieveInvAck
-                    //does this need to be accounted for?
-                        
-                    // transition to M
-                    line->setFlags(MODIFIED);
-                }
-                else if (copies_exist == 0)
-                {
-                    // transition to M
-                    line->setFlags(MODIFIED);
-                }
-                    
+                    ((Directory *)dir)->Upgr(addr, this);
                 else
                     // 4. S->S on PrRd
                     ;
                 
-            break;
+                break;
             
-        default:
-            break;
+            default:
+                break;
         }
     }
+}
+
+/*allocate a new line*/
+cacheLine *MesiCache::fillLine(ulong addr)
+{ 
+    ulong tag;
+    
+    cacheLine *victim = findLineToReplace(addr);
+    assert(victim != 0);
+    
+    if(victim->getFlags() == MODIFIED)
+    {
+        writeBack(addr);
+        memWrite();
+    }
+    
+    tag = calcTag(addr);  
+    victim->setTag(tag);
+    // other code will set the flags.
+    /**note that this cache line has been already 
+     upgraded to MRU in the previous function (findLineToReplace)**/
+    
+    return victim;
 }
 
 void MesiCache::Inv(ulong addr)
@@ -218,14 +152,28 @@ void MesiCache::WB_Int(ulong addr)
     line->setFlags(SHARED);
 }
 
-void MesiCache::Flush(ulong addr)
+void MesiCache::ReplyD(ulong addr, bool shared)
 {
-    //find if a line contains this block
+	// find if a line contains this block
     cacheLine *line = findLine(addr);
-    //printf("handling BusRd\n");
     
-    if(line == NULL)
-        return;
+	if(shared)
+	{
+		line->setFlags(MESI_SHARED);
+	}
+	else
+	{
+		line->setFlags(MESI_EXCLUSIVE);
+	}
+}
 
-    //No cache to cache communication, return everything to home node
+void MesiCache::Flush(ulong addr, Cache *requestor)
+{
+	// find if a line contains this block
+    cacheLine *line = findLine(addr);
+
+	//flush to requestor
+    requestor->Flush(line);
+
+	cacheToCacheWrites++;
 }
