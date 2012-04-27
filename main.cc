@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
     ifstream fin;
     FILE * pFile;
 
-    if(argc < 7){
+    if(argc < 5){
 	printf("input format: ");
 	printf("./smp_cache <cache_size> <assoc> <block_size> <trace_file>\n");
 	exit(0);
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     int cache_assoc= atoi(argv[2]);
     int blk_size   = atoi(argv[3]);
     int num_processors = 4;
-    const char *fname = argv[6];
+    const char *fname = argv[4];
 
     //*********************************************//
     //****Print out configuration settings here****//
