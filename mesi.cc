@@ -50,14 +50,10 @@ void MesiCache::Access(ulong addr,uchar op)
         case EXCLUSIVE:
             if(op == 'w')
                 line->setFlags(MODIFIED);
-            else
-                ;
-                
             break;
                 
         case MODIFIED:
             // 1., 2. M-->M on PrRd and PrWr
-                
             break;
             
         case SHARED:
