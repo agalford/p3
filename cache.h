@@ -88,7 +88,7 @@ class Cache
     void Read(ulong addr);
     void Flush(ulong addr);
     void Upgr(ulong addr);
-    void WB_Int(ulong addr, int ids);
+    void WB_Int(ulong addr, int id);
     void Reply(ulong addr);
     void ReplyD(ulong addr, bool shared);
     void Inv(ulong addr);
