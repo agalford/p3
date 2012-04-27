@@ -43,6 +43,7 @@ void Directory::Read(ulong addr, int id)
         if (line->getFlags() == SHARED) {
             //shared, so directory has the cache data
             caches[id]->ReplyD(addr, true); //shared
+            line->fbv |= (1<<id);
         } else if (line->getFlags() == EM) {
             //could be modified, have the owner flush
             caches[getId(line->fbv)]->WB_Int(addr, id);
