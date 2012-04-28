@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <assert.h>
 #include "mesi.h"
 #include "directory.h"
 using namespace std;
@@ -19,10 +20,31 @@ Directory::Directory(Cache** cs, int n, int s, int a, int b) : Cache(s,a,b,0)
 int Directory::getId(int fbv) //get first id from bit vector
 {
     for(int i=0; i<num_caches; i++) {
-        if (fbv & (1<<i))
+        if (fbv & (1<<i)) {
             return i;
+        }
     }
     return -1;
+}
+
+/*allocate a new line*/
+cacheLine *Directory::fillLine(ulong addr)
+{ 
+    ulong tag;
+  
+    cacheLine *victim = findLineToReplace(addr);
+    assert(victim != 0);
+    if(victim->getFlags() == MODIFIED) {
+        writeBack(addr);
+    }
+
+    tag = calcTag(addr);   
+    victim->setTag(tag);
+
+    /**note that this cache line has been already 
+       upgraded to MRU in the previous function (findLineToReplace)**/
+
+    return victim;
 }
 
 //
@@ -64,16 +86,15 @@ void Directory::Upgr(ulong addr, int id)
     if (line == NULL) {
         //write miss
         line = fillLine(addr);
-        line->setFlags(EM);
     } else {
         //write hit
-        line->setFlags(EM);
         for(int i=0; i<num_caches; i++) {
             if (line->fbv & 1<<i && i != id) {
                 caches[i]->Inv(addr); //invalidate other caches
             }
         }
     }
+    line->setFlags(EM);
     line->fbv = 1<<id; //line is now owned by a single processor, set the fbv
 }
 
@@ -88,6 +109,6 @@ void Directory::Disown(ulong addr, int id)
     if (line!=NULL) {
         line->fbv &= ~(1<<id); // remove id from the list of owners
         if (line->fbv == 0)
-            line->setFlags(UNOWNED);
-    }  
+            line->setFlags(INVALID);
+    }
 }

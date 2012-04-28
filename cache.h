@@ -36,6 +36,7 @@ class cacheLine
  
  public:
     int fbv;
+    ulong addr;
     cacheLine()            { tag = 0; Flags = 0; }
     ulong getTag()         { return tag; }
     ulong getFlags()			{ return Flags;}

@@ -20,6 +20,8 @@ class Directory : public Cache
  public:
     Directory(Cache**, int, int, int, int);
 
+    cacheLine* fillLine(ulong addr);
+
     //network transactions
     void Read(ulong addr, int id);
     void Flush(ulong addr);

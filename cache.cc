@@ -151,6 +151,8 @@ cacheLine *Cache::fillLine(ulong addr)
     tag = calcTag(addr);   
     victim->setTag(tag);
 
+    victim->addr = addr;
+    
     /**note that this cache line has been already 
        upgraded to MRU in the previous function (findLineToReplace)**/
 

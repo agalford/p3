@@ -6,6 +6,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <iostream>
 #include "mesi.h"
 #include "directory.h"
@@ -28,6 +29,7 @@ void MesiCache::Access(ulong addr,uchar op)
     else          reads++;
 
     cacheLine * line = findLine(addr);
+
     if(line == NULL) {/*miss*/
         if(op == 'w') writeMisses++;
         else readMisses++;
@@ -39,7 +41,7 @@ void MesiCache::Access(ulong addr,uchar op)
             dir->Upgr(addr, id);
         }
         else {// read miss
-            // Send Upgr request to the directory
+            // Send Read request to the directory
             dir->Read(addr, id);
         }
     }
@@ -82,11 +84,13 @@ cacheLine *MesiCache::fillLine(ulong addr)
     if(victim->getFlags() == MODIFIED) {
         writeBack(addr);
     }
+
+    dir->Disown(victim->addr, id);
     
-    dir->Disown(addr,id);
-    	
     tag = calcTag(addr);   
     victim->setTag(tag);
+
+    victim->addr = addr;
 
     /**note that this cache line has been already 
        upgraded to MRU in the previous function (findLineToReplace)**/
@@ -134,8 +138,11 @@ void MesiCache::WB_Int(ulong addr, int id)
     cacheLine *line = findLine(addr);
     //printf("handling BusRd\n");
     
-    if(line == NULL)
-        cout << "attempting to have non-owner flush line";
+    if(line == NULL) {
+        cout << "attempting to have non-owner flush line " <<addr << "\n";
+        cout.flush();
+        exit(1);
+    }
 
     line->setFlags(SHARED);
 
