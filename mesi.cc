@@ -60,9 +60,11 @@ void MesiCache::Access(ulong addr,uchar op)
             break;
             
         case SHARED:
-            if(op == 'w')
+            if(op == 'w') {
                 // post upgr to home
+                line->setFlags(MODIFIED);
                 dir->Upgr(addr, id);
+            }
             else
                 // 4. S->S on PrRd
                 ;
