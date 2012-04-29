@@ -37,8 +37,9 @@ void MesiCache::Access(ulong addr,uchar op)
         if(op == 'w') {          
             // Send Upgr request to the directory
             line = fillLine(addr);
-            line->setFlags(MODIFIED);
+            dir->Read(addr, id);
             dir->Upgr(addr, id);
+            line->setFlags(MODIFIED);
         }
         else {// read miss
             // Send Read request to the directory
