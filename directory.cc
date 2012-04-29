@@ -75,11 +75,6 @@ void Directory::Read(ulong addr, int id)
     }
 }
 
-void Directory::Flush(ulong addr)
-{
-    findLine(addr);
-}
-
 void Directory::Upgr(ulong addr, int id)
 {
     cacheLine * line = findLine(addr);

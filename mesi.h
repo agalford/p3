@@ -23,7 +23,6 @@ public:
     cacheLine* fillLine(ulong);
     
     void Inv(ulong addr);
-    void WB_Inv(ulong addr);
     void WB_Int(ulong addr, int id);
     void Flush(ulong addr);
     void ReplyD(ulong addr, bool shared);

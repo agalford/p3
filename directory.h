@@ -24,7 +24,6 @@ class Directory : public Cache
 
     //network transactions
     void Read(ulong addr, int id);
-    void Flush(ulong addr);
     void Flush(ulong addr, int id);
     void Upgr(ulong addr, int id);
     void Disown(ulong addr, int id);

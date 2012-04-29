@@ -146,7 +146,6 @@ void MesiCache::WB_Int(ulong addr, int id)
 
     line->setFlags(SHARED);
 
-    dir->Flush(addr); //flush to directory
     dir->Flush(addr, id); //flush to requestor
 }
 
