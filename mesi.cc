@@ -46,6 +46,7 @@ void MesiCache::Access(ulong addr,uchar op)
         }
     }
     else {
+        updateLRU(line);
         ulong flags = line->getFlags();
         
         switch(flags) {
