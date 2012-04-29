@@ -107,32 +107,11 @@ void MesiCache::Inv(ulong addr)
     cacheLine *line = findLine(addr);
     //printf("handling BusRd\n");
     
-    if(line == NULL)
-        return;
+    if(line != NULL)
+        line->setFlags(INVALID);
 
     //increse invalidation count
     invalidations++;
-
-    line->setFlags(INVALID);
-
-    //No cache to cache communication
-}
-
-void MesiCache::WB_Inv(ulong addr)
-{
-    // find if a line contains this block
-    cacheLine *line = findLine(addr);
-    //printf("handling BusRd\n");
-    
-    if(line == NULL)
-        return;
-
-    //increse invalidation count
-    invalidations++;
-
-    line->setFlags(INVALID);
-
-    //No cache to cache communication
 }
 
 void MesiCache::WB_Int(ulong addr, int id)
@@ -172,14 +151,10 @@ void MesiCache::Flush(ulong addr)
 {
     // find if a line contains this block
     cacheLine *line = findLine(addr);
-    if (line != NULL) {
-        //alread have the line, so its state needs to be updated
-        line->setFlags(SHARED);
-    } else {
-        //don't have it yet; fill the line and set to shared
+    if (line == NULL)
         line = fillLine(addr);
-        line->setFlags(SHARED);
-    }
+    
+    line->setFlags(SHARED);
     
     //we received the data from another cache, so increment the cache-to-cache transfer counter
     linesReceived++;
