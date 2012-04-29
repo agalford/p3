@@ -54,25 +54,23 @@ cacheLine *Directory::fillLine(ulong addr)
 void Directory::Read(ulong addr, int id)
 {
     cacheLine * line = findLine(addr);
-    if (line == NULL || line->getFlags() == UNOWNED) {
-        //read miss
+    if (line == NULL) {
         line = fillLine(addr);
         line->setFlags(EM);
         line->fbv = 1<<id; //new line, so just set the FBV
         caches[id]->ReplyD(addr, false); //not shared, reply from memory
     } else {
         updateLRU(line);
-        //read hit
         if (line->getFlags() == SHARED) {
             //shared, so directory has the cache data
             caches[id]->ReplyD(addr, true); //shared, reply from directory cache
-            line->fbv |= (1<<id);
         } else if (line->getFlags() == EM) {
             //could be modified, have the owner flush
             caches[getId(line->fbv)]->WB_Int(addr, id);
-            line->fbv |= (1<<id);
             line->setFlags(SHARED);
         }
+
+        line->fbv |= (1<<id); //add cache to set of owners
     }
 }
 
