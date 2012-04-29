@@ -59,12 +59,13 @@ void Directory::Read(ulong addr, int id)
         line = fillLine(addr);
         line->setFlags(EM);
         line->fbv = 1<<id; //new line, so just set the FBV
-        caches[id]->ReplyD(addr, false); //not shared
+        caches[id]->ReplyD(addr, false); //not shared, reply from memory
     } else {
+        updateLRU(line);
         //read hit
         if (line->getFlags() == SHARED) {
             //shared, so directory has the cache data
-            caches[id]->ReplyD(addr, true); //shared
+            caches[id]->ReplyD(addr, true); //shared, reply from directory cache
             line->fbv |= (1<<id);
         } else if (line->getFlags() == EM) {
             //could be modified, have the owner flush
@@ -78,17 +79,15 @@ void Directory::Read(ulong addr, int id)
 void Directory::Upgr(ulong addr, int id)
 {
     cacheLine * line = findLine(addr);
-    if (line == NULL) {
-        //write miss
+    if (line == NULL)
         line = fillLine(addr);
-    } else {
-        //write hit
-        for(int i=0; i<num_caches; i++) {
-            if (line->fbv & 1<<i && i != id) {
-                caches[i]->Inv(addr); //invalidate other caches
-            }
+
+    for(int i=0; i<num_caches; i++) {
+        if (i != id) {
+            caches[i]->Inv(addr); //invalidate other caches
         }
     }
+
     line->setFlags(EM);
     line->fbv = 1<<id; //line is now owned by a single processor, set the fbv
 }

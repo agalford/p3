@@ -107,11 +107,10 @@ void MesiCache::Inv(ulong addr)
     cacheLine *line = findLine(addr);
     //printf("handling BusRd\n");
     
-    if(line != NULL)
+    if(line != NULL) {
         line->setFlags(INVALID);
-
-    //increse invalidation count
-    invalidations++;
+        invalidations++;
+    }
 }
 
 void MesiCache::WB_Int(ulong addr, int id)
