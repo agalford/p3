@@ -69,39 +69,13 @@ int main(int argc, char *argv[])
     //*****by calling cachesArray[processor#]->Access(...)***************//
     ///******************************************************************//
 
-    int id, num=0;
-    int states[4];
-    bool modified = false, shared = false;
+    int id;
     char op[16];
-    char hex[16];
-    ulong addr;
+    char addr[16];
     while(!feof(pFile)) {
-        int c = fscanf(pFile, "%d %s %s", &id, op, hex);
-        addr = strtoul(hex,NULL,16);
+        int c = fscanf(pFile, "%d %s %s", &id, op, addr);
         if (c == 3)
-            caches[id]->Access(addr, op[0]);
-
-        //transitions should be finished
-        //diagnostic code:
-        for (int i=0;i<num_processors;i++) {
-            states[i] = caches[i]->getState(addr);
-            if (states[i] == MODIFIED) modified = true;
-        }
-        if (modified) {
-            for (int i=0; i<num_processors; i++) {
-                if (states[i] == SHARED) shared = true;
-            }
-            if (shared) {
-                printf("#: %d, addr: %lu, Id: %d, Op: %c, ", num, addr, id, op[0]);
-                cout << "States: ";
-                for (int i=num_processors-1;i>=0;i--) cout << states[i] << ", ";
-                cout << "; FBV: " << dir->getFbv(addr);
-                cout << " Dir state: " << dir->getState(addr);
-                cout << "\n";
-            }
-        }
-        modified = shared = false;
-        num++;
+            caches[id]->Access(strtoul(addr,NULL,16), op[0]);
     }
 	
     fclose(pFile);
