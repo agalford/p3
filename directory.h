@@ -10,16 +10,21 @@
 
 #include "cache.h"
 
-class Directory : public Cache
+class Directory
 {
     Cache** caches;
     int num_caches;
+    ulong size, num_lines, log2Blk;
 
     int getId(int fbv);
+
+    cacheLine* cache;
+    ulong calcTag(ulong addr)     { return (addr >> (log2Blk) );}
 
  public:
     Directory(Cache**, int, int, int, int);
 
+    cacheLine* findLine(ulong addr);
     cacheLine* fillLine(ulong addr);
 
     //network transactions
@@ -27,6 +32,9 @@ class Directory : public Cache
     void Flush(ulong addr, int id);
     void Upgr(ulong addr, int id);
     void Disown(ulong addr, int id);
+
+    int getFbv(ulong addr);
+    int getState(ulong addr);
 };
 
 #endif

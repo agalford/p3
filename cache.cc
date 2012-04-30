@@ -172,6 +172,15 @@ void Cache::printStats(int id)
     cout << "08. number of cache to cache transfers:           " << linesReceived << "\n";
 }
 
+int Cache::getState(ulong addr)
+{
+    cacheLine* line = findLine(addr);
+    if (line == NULL)
+        return 0;
+    else
+        return line->getFlags();
+}
+
 //network transactions
 void Cache::Flush(ulong addr) {}
 void Cache::Upgr(ulong addr) {}

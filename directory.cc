@@ -11,11 +11,55 @@
 #include "directory.h"
 using namespace std;
 
-Directory::Directory(Cache** cs, int n, int s, int a, int b) : Cache(s,a,b,0)
+Directory::Directory(Cache** cs, int n, int s, int a, int b)
 {
     caches = cs;
     num_caches = n;
+
+    size       = (ulong)(s);
+    num_lines   = (ulong)(s/b)*num_caches;
+    log2Blk    = (ulong)(log2(b));
+  
+    cache = new cacheLine[num_lines];
 }
+
+/*look up line*/
+cacheLine * Directory::findLine(ulong addr)
+{
+    ulong tag = calcTag(addr);
+    cacheLine* line = NULL;
+    
+    for(ulong i=0;i<num_lines;i++) {
+        if (cache[i].isValid() && cache[i].getTag() == tag) {
+            line = &(cache[i]);
+            break;
+        }
+    }
+
+    return line;
+}
+
+
+/*allocate a new line*/
+cacheLine *Directory::fillLine(ulong addr)
+{ 
+    ulong tag;
+    cacheLine* victim;
+
+    for(ulong i=0; i<num_lines; i++) {
+        if (!cache[i].isValid()) {
+            victim = &(cache[i]);
+            break;
+        }
+    }
+
+    tag = calcTag(addr);   
+    victim->setTag(tag);
+
+    return victim;
+}
+
+//New functions specifically for directory
 
 int Directory::getId(int fbv) //get first id from bit vector
 {
@@ -24,27 +68,7 @@ int Directory::getId(int fbv) //get first id from bit vector
             return i;
         }
     }
-    return -1;
-}
-
-/*allocate a new line*/
-cacheLine *Directory::fillLine(ulong addr)
-{ 
-    ulong tag;
-  
-    cacheLine *victim = findLineToReplace(addr);
-    assert(victim != 0);
-    if(victim->getFlags() == MODIFIED) {
-        writeBack(addr);
-    }
-
-    tag = calcTag(addr);   
-    victim->setTag(tag);
-
-    /**note that this cache line has been already 
-       upgraded to MRU in the previous function (findLineToReplace)**/
-
-    return victim;
+    return 0;
 }
 
 //
@@ -60,7 +84,6 @@ void Directory::Read(ulong addr, int id)
         line->fbv = 1<<id; //new line, so just set the FBV
         caches[id]->ReplyD(addr, false); //not shared, reply from memory
     } else {
-        updateLRU(line);
         if (line->getFlags() == SHARED) {
             //shared, so directory has the cache data
             caches[id]->ReplyD(addr, true); //shared, reply from directory cache
@@ -103,4 +126,22 @@ void Directory::Disown(ulong addr, int id)
         if (line->fbv == 0)
             line->setFlags(INVALID);
     }
+}
+
+int Directory::getFbv(ulong addr)
+{
+    cacheLine* line = findLine(addr);
+    if (line == NULL)
+        return 0;
+    else
+        return line->fbv;
+}
+
+int Directory::getState(ulong addr)
+{
+    cacheLine* line = findLine(addr);
+    if (line == NULL)
+        return 0;
+    else
+        return line->getFlags();
 }

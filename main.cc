@@ -26,9 +26,9 @@ int main(int argc, char *argv[])
     FILE * pFile;
 
     if(argc < 5){
-	printf("input format: ");
-	printf("./smp_cache <cache_size> <assoc> <block_size> <trace_file>\n");
-	exit(0);
+        printf("input format: ");
+        printf("./smp_cache <cache_size> <assoc> <block_size> <trace_file>\n");
+        exit(0);
     }
 
     int cache_size = atoi(argv[1]);
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     //*****create an array of caches here**********//
     //*********************************************//	
     Cache **caches = new Cache*[num_processors];
-    Directory* dir = new Directory(caches, num_processors, cache_size, cache_assoc, blk_size);
+    Directory* dir = new Directory(caches, num_processors, cache_size*4, cache_assoc, blk_size);
 
     for (int i = 0; i < num_processors; i++) {
         caches[i] = new MesiCache(cache_size, cache_assoc, blk_size, i, dir); //initialize caches
@@ -59,8 +59,8 @@ int main(int argc, char *argv[])
 
     pFile = fopen (fname,"r");
     if(pFile == 0) {
-	printf("Trace file problem\n");
-	exit(0);
+        printf("Trace file problem\n");
+        exit(0);
     }
 
     ///******************************************************************//
@@ -69,15 +69,40 @@ int main(int argc, char *argv[])
     //*****by calling cachesArray[processor#]->Access(...)***************//
     ///******************************************************************//
 
-    int id;
+    int id, num=0;
+    int states[4];
+    bool modified = false, shared = false;
     char op[16];
-    char addr[16];
+    char hex[16];
+    ulong addr;
     while(!feof(pFile)) {
-      int c = fscanf(pFile, "%d %s %s", &id, op, addr);
-      if (c == 3)
-	caches[id]->Access(strtoul(addr,NULL,16), op[0]);
-    }
+        int c = fscanf(pFile, "%d %s %s", &id, op, hex);
+        addr = strtoul(hex,NULL,16);
+        if (c == 3)
+            caches[id]->Access(addr, op[0]);
 
+        //transitions should be finished
+        //diagnostic code:
+        for (int i=0;i<num_processors;i++) {
+            states[i] = caches[i]->getState(addr);
+            if (states[i] == MODIFIED) modified = true;
+        }
+        if (modified) {
+            for (int i=0; i<num_processors; i++) {
+                if (states[i] == SHARED) shared = true;
+            }
+            if (shared) {
+                printf("#: %d, addr: %lu, Id: %d, Op: %c, ", num, addr, id, op[0]);
+                cout << "States: ";
+                for (int i=num_processors-1;i>=0;i--) cout << states[i] << ", ";
+                cout << "; FBV: " << dir->getFbv(addr);
+                cout << " Dir state: " << dir->getState(addr);
+                cout << "\n";
+            }
+        }
+        modified = shared = false;
+        num++;
+    }
 	
     fclose(pFile);
 
@@ -85,6 +110,6 @@ int main(int argc, char *argv[])
     //print out all caches' statistics//
     //********************************//
     for (int i=0; i < num_processors; i++) {
-	caches[i]->printStats(i);
+        caches[i]->printStats(i);
     }
 }

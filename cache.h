@@ -68,11 +68,12 @@ class Cache
     ulong currentCycle;  
     
     Cache(int,int,int,int);
+    Cache(){};
     virtual ~Cache() { delete cache;}
    
     virtual cacheLine *findLineToReplace(ulong addr);
     virtual cacheLine *fillLine(ulong addr);
-    cacheLine * findLine(ulong addr);
+    virtual cacheLine *findLine(ulong addr);
     cacheLine * getLRU(ulong);
    
     ulong getRM(){return readMisses;} ulong getWM(){return writeMisses;} 
@@ -91,6 +92,8 @@ class Cache
     virtual void WB_Int(ulong addr, int id);
     virtual void ReplyD(ulong addr, bool shared);
     virtual void Inv(ulong addr);
+
+    int getState(ulong addr);
 };
 
 #endif

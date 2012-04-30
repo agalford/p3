@@ -104,9 +104,7 @@ cacheLine *MesiCache::fillLine(ulong addr)
 
 void MesiCache::Inv(ulong addr)
 {
-    // find if a line contains this block
     cacheLine *line = findLine(addr);
-    //printf("handling BusRd\n");
     
     if(line != NULL) {
         line->setFlags(INVALID);
@@ -118,7 +116,6 @@ void MesiCache::WB_Int(ulong addr, int id)
 {
     // find if a line contains this block
     cacheLine *line = findLine(addr);
-    //printf("handling BusRd\n");
     
     if(line == NULL) {
         cout << "attempting to have non-owner flush line " <<addr << "\n";
